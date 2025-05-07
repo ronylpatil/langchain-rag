@@ -15,3 +15,6 @@ store_data:
   collection_name: "rag_docs"
   field_name: "vector"
   embedding_model: "text-embedding-3-small"
+
+retriever:
+  relevant_chunks: 5
