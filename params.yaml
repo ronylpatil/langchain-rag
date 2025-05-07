@@ -11,3 +11,7 @@ chunk_data:
   chunk_size: 1000
   chunk_overlap: 100
 
+store_data:
+  collection_name: "rag_docs"
+  field_name: "vector"
+  embedding_model: "text-embedding-3-small"
