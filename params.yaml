@@ -18,3 +18,9 @@ store_data:
 
 retriever:
   relevant_chunks: 5
+
+llm_response:
+  model: "gpt-4"
+  temprature: 0.4
+  prompt_file_path: "E:/MLOps/rag-pipeline/src/llm/prompt.j2"
+  
