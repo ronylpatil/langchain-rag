@@ -51,7 +51,6 @@ def response(
         )
 
         final_prompt = prompt.invoke({"context": f"{context}", "question": f"{query}"})
-        print(final_prompt)
         
         try:
             final_response = model.invoke(final_prompt)
@@ -93,6 +92,6 @@ if __name__ == "__main__":
     
     final_context = process_text(ranked_chunks)
     final_response = response(query=user_query, context=final_context, model=llm, prompt_file_path=params["llm_response"]["prompt_file_path"])
-    print(f"Response: {final_response}")
+    print(f"Response: {final_response.content}")
     
     infologger.info("*** Completed: llm_response.py ***")
