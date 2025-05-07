@@ -6,3 +6,8 @@ s3_uploder:
 s3_loader:
   local_path: "data/external"
   local_data: "data/raw"
+
+chunk_data:
+  chunk_size: 1000
+  chunk_overlap: 100
+
