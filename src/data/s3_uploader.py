@@ -5,7 +5,7 @@ import pathlib
 from dotenv import load_dotenv
 from src.logger import infologger
 
-infologger.info("*** Executing: upload_to_s3.py ***")
+infologger.info("*** Executing: s3_uploader.py ***")
 
 load_dotenv(override=True)
 
@@ -41,7 +41,7 @@ if __name__ == "__main__":
     curr_dir = pathlib.Path(__file__)
     home_dir = curr_dir.parent.parent.parent.as_posix()
     params_loc = home_dir + "/params.yaml"
-    params = yaml.safe_load(open(params_loc, encoding="utf-8"))["upload_to_s3"]
+    params = yaml.safe_load(open(params_loc, encoding="utf-8"))["s3_uploader"]
     # push data from local -> s3
     push_to_s3(params)
-    infologger.info("*** Completed: upload_to_s3.py ***")
+    infologger.info("*** Completed: s3_uploader.py ***")

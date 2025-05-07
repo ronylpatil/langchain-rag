@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from src.logger import infologger
 
 
-infologger.info("*** Executing: load_data.py ***")
+infologger.info("*** Executing: s3_loader.py ***")
 
 load_dotenv()
 
@@ -25,8 +25,8 @@ def load_data_from_s3(params: dict) -> None:
     # List all docs under the given prefix
     try:
         response = s3.list_objects_v2(
-            Bucket=params["upload_to_s3"]["s3_bucket"],
-            Prefix=params["upload_to_s3"]["s3_path"],
+            Bucket=params["s3_loader"]["s3_bucket"],
+            Prefix=params["s3_loader"]["s3_path"],
         )
     except Exception as e:
         infologger.error(f"Error listing objects in S3: {e}")
@@ -36,7 +36,7 @@ def load_data_from_s3(params: dict) -> None:
         if key.endswith(".pdf"):
             try:
                 s3.download_file(
-                    params["upload_to_s3"]["s3_bucket"],
+                    params["s3_loader"]["s3_bucket"],
                     key,
                     f"{home_dir}/data/raw/{key.split('/')[-1]}",
                 )
@@ -53,4 +53,4 @@ if __name__ == "__main__":
     home_dir = curr_dir.parent.parent.parent.as_posix()
     params = yaml.safe_load(open(f"{home_dir}/params.yaml", encoding="utf-8"))
     load_data_from_s3(params)
-    infologger.info("*** Completed: load_data.py ***")
+    infologger.info("*** Completed: s3_loader.py ***")

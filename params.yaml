@@ -1,0 +1,8 @@
+s3_uploder:
+  data_path: "data/external"
+  s3_bucket: "ragpipelinedata"
+  s3_path: "ragpipelinedata/input_data"
+
+s3_loader:
+  local_path: "data/external"
+  local_data: "data/raw"
