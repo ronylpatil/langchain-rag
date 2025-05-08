@@ -1,4 +1,4 @@
-s3_uploder:
+s3_uploader:
   data_path: "data/external"
   s3_bucket: "ragpipelinedata"
   s3_path: "ragpipelinedata/input_data"

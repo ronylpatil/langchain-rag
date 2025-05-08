@@ -25,8 +25,8 @@ def load_data_from_s3(params: dict) -> None:
     # List all docs under the given prefix
     try:
         response = s3.list_objects_v2(
-            Bucket=params["s3_loader"]["s3_bucket"],
-            Prefix=params["s3_loader"]["s3_path"],
+            Bucket=params["s3_uploader"]["s3_bucket"],
+            Prefix=params["s3_uploader"]["s3_path"],
         )
     except Exception as e:
         infologger.error(f"Error listing objects in S3: {e}")
@@ -36,7 +36,7 @@ def load_data_from_s3(params: dict) -> None:
         if key.endswith(".pdf"):
             try:
                 s3.download_file(
-                    params["s3_loader"]["s3_bucket"],
+                    params["s3_uploader"]["s3_bucket"],
                     key,
                     f"{home_dir}/data/raw/{key.split('/')[-1]}",
                 )
