@@ -23,7 +23,7 @@ def callback(ch, method, properties, body) -> None:
     else:
         infologger.info(f"User query vectorized successfully.")
 
-        # Forward user query + vector to search_service
+        # Forward user query + vector to search_queue
         publish("search_queue", {"query": data["text"], "vector": query_vector})
         infologger.info("Data sent to search_queue successfully...")
 

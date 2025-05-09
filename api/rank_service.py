@@ -25,7 +25,7 @@ def callback(ch, method, properties, body):
             chunk for _, chunk in sorted(zip(scores, data["top_chunks"]), reverse=True)
         ]
 
-        publish("llm_queue", {"ranked_chunks": ranked_chunks})
+        publish("llm_queue", {"query": data["query"], "ranked_chunks": ranked_chunks})
         infologger.info("Data sent to llm_queue successfully...")
 
 

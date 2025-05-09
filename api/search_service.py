@@ -34,7 +34,8 @@ def callback(ch, method, properties, body):
             filter=f"year in {year}" if year else None,
         )
     except Exception as e:
-        infologger.error(f"Failed to search relevant chunks. {e}")
+        infologger.error(f"Failed to search relevant chunks.")
+        raise
     else:
         infologger.info("Relevant chunks extracted successfully.")
 
@@ -57,7 +58,8 @@ if __name__ == "__main__":
     try:
         client = MilvusClient(uri=uri, token=token)
     except Exception as e:
-        infologger.error(f"Failed to initilize MilvusClient. {e}")
+        infologger.error(f"Failed to initilize MilvusClient.")
+        raise
     else:
         infologger.info("MilvusClient intilized successfully.")
 
