@@ -1,7 +1,7 @@
 import json
 import yaml
 import pathlib
-from src.logger import infologger
+from logger import infologger
 from rabbit_utils import connect, publish
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import PromptTemplate
@@ -13,9 +13,9 @@ model = None
 def callback(ch, method, properties, body):
     data = json.loads(body)  # {"query": data["query"], "ranked_chunks": ranked_chunks}
     infologger.info(f"Data received at llm_queue.")
-    infologger.info(f"Data: {data}")
+    # infologger.info(f"Data: {data}")
     
-    context = "\n".join([i.page_content for i in data["ranked_chunks"]])
+    context = "\n".join([i for i in data["ranked_chunks"]])
     infologger.info("Final context prepared.")
 
     try:
@@ -39,7 +39,8 @@ def callback(ch, method, properties, body):
             infologger.error(f"Failed to invoke LLM model. {e}")
         else:
             infologger.info("LLM resonse generated successfully.")
-            print(f"Final response: {response}")
+            print(f"Query: {data['query']}")
+            print(f"Final response: {response.content}")
 
     
 if __name__ == "__main__":
@@ -50,11 +51,11 @@ if __name__ == "__main__":
     try:
         model = ChatOpenAI(model=params["llm_response"]["model"])
     except Exception as e:
-        infologger.error(f"Failed to load {params["llm_response"]["model"]} model: {e}")
+        infologger.error(f"Failed to load {params['llm_response']['model']} model: {e}")
         raise
     else:
         infologger.info(
-            f"Successfully loaded {params["llm_response"]["model"]} model with {params["llm_response"]["temprature"]} temprature."
+            f"Successfully loaded {params['llm_response']['model']} model with {params['llm_response']['temprature']} temprature."
         )
     
     connection = connect()
@@ -65,5 +66,5 @@ if __name__ == "__main__":
     channel.basic_consume(
         queue="llm_queue", on_message_callback=callback, auto_ack=True
     )
-    infologger.info("vectorizer_queue waiting for text...")
+    infologger.info("llm_queue waiting for text...")
     channel.start_consuming()

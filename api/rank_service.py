@@ -1,5 +1,5 @@
 import json
-from src.logger import infologger
+from logger import infologger
 from rabbit_utils import connect, publish
 from sentence_transformers import CrossEncoder
 
@@ -11,7 +11,7 @@ model = None
 def callback(ch, method, properties, body):
     data = json.loads(body)  # {"query": data["query"], "top_chunks": result}
     infologger.info(f"Data received at rank_queue.")
-    infologger.info(f"Data: {data}")
+    # infologger.info(f"Data: {data}")
 
     pairs = [(data["query"], chunk) for chunk in data["top_chunks"]]
     try:
@@ -26,7 +26,6 @@ def callback(ch, method, properties, body):
         ]
 
         publish("llm_queue", {"query": data["query"], "ranked_chunks": ranked_chunks})
-        infologger.info("Data sent to llm_queue successfully...")
 
 
 if __name__ == "__main__":

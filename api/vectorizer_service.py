@@ -1,7 +1,7 @@
 import json
 import yaml
 import pathlib
-from src.logger import infologger
+from logger import infologger
 from rabbit_utils import connect, publish
 from langchain_openai import OpenAIEmbeddings
 
@@ -13,7 +13,7 @@ embedding_model_obj = None
 def callback(ch, method, properties, body) -> None:
     data = json.loads(body)  # body: {"text": input.text}
     infologger.info(f"Data received at vectorizer_queue.")
-    infologger.info(f"Data: {data}")
+    # infologger.info(f"Data: {data}")
 
     try:
         query_vector = embedding_model.embed_query(data["text"])
@@ -25,13 +25,13 @@ def callback(ch, method, properties, body) -> None:
 
         # Forward user query + vector to search_queue
         publish("search_queue", {"query": data["text"], "vector": query_vector})
-        infologger.info("Data sent to search_queue successfully...")
 
 
 if __name__ == "__main__":
 
     home_dir = pathlib.Path(__file__).parent.parent.as_posix()
     params = yaml.safe_load(open(f"{home_dir}/params.yaml", encoding="utf-8"))
+
     try:
         embedding_model = OpenAIEmbeddings(
             model=params["store_data"]["embedding_model"]
