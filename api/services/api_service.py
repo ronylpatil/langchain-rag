@@ -1,3 +1,4 @@
+import uuid
 from fastapi import FastAPI
 from pydantic import BaseModel
 from api.rabbit_utils import publish  # Reuse your existing RabbitMQ publishing code
@@ -19,9 +20,23 @@ async def send_query(input: QueryInput):
     Args:
         input (QueryInput): The input data containing the text to be vectorized.
     """
-    # Send user query to vectorizer_queue
-    publish("vectorizer_queue", {"text": input.text})
 
-    return {"message": "query sent to vectorizer_queue..."}
+    query_id = str(uuid.uuid4())  # Generate a unique query ID
+    # Message template
+    message = {
+        "id": query_id,
+        "stage": "vectorizer",
+        "user_query": input.text,
+        "query_vector": None,
+        "search_results": None,
+        "ranked_results": None,
+        "final_answer": None,
+    }
+
+    # Send user query to vectorizer_queue
+    publish("rag_queue", message)
+
+    return {"info": "query sent to message queue.", "query_id": query_id}
+
 
 # CMD: uvicorn api.api_service:app --reload

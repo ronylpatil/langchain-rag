@@ -1,10 +1,10 @@
 import os
 import re
 import json
-from logger import infologger
+from api.logger import infologger
 from dotenv import load_dotenv
 from pymilvus import MilvusClient
-from rabbit_utils import connect, publish
+from api.rabbit_utils import connect, publish
 
 
 infologger.info("*** Executing: search_service.py ***")
@@ -13,13 +13,17 @@ client = None
 
 
 def callback(ch, method, properties, body):
-    data = json.loads(body)  # {"query": data["text"], "vector": query_vector}
-    infologger.info(f"Data received at search_queue.")
-    # infologger.info(f"Data: {data}")
+    message = json.loads(body)
+    
+    if message.get("stage") != "search":
+        publish("rag_queue", message)
+        return
+
+    infologger.info(f"Search service received the data.")
 
     # extract year from query for better retrieval
     year_pattern = r"\b20\d{2}\b"
-    year = re.findall(year_pattern, data["query"])
+    year = re.findall(year_pattern, message["user_query"])
     year = list(map(int, year))
     infologger.info(f"Extracted year from query: {year}")
 
@@ -27,7 +31,7 @@ def callback(ch, method, properties, body):
     try:
         result = client.search(
             collection_name="rag_docs",
-            data=[data["vector"]],  # query vector
+            data=[message["query_vector"]],  # query vector
             limit=5,  # number of top results
             output_fields=["year", "page_content"],
             search_params={"metric_type": "COSINE", "params": {"nprobe": 20}},
@@ -44,8 +48,11 @@ def callback(ch, method, properties, body):
         for i in result[0]:
             top_chunks.append(i.page_content)
 
+        message["search_results"] = top_chunks
+        message["stage"] = "rank"
+
         # Forward user query + top chunks to rank_queue
-        publish("rank_queue", {"query": data["query"], "top_chunks": top_chunks})
+        publish("rag_queue", message)
 
 
 if __name__ == "__main__":
@@ -64,11 +71,11 @@ if __name__ == "__main__":
 
         connection = connect()
         channel = connection.channel()
-        channel.queue_declare(queue="search_queue")
-        infologger.info("search_queue created/declared...")
+        channel.queue_declare(queue="rag_queue")
+        infologger.info("rag_queue created/declared...")
 
         channel.basic_consume(
-            queue="search_queue", on_message_callback=callback, auto_ack=True
+            queue="rag_queue", on_message_callback=callback, auto_ack=True
         )
-        infologger.info("search_queue waiting for vectors...")
+        infologger.info("Search service waiting for message...")
         channel.start_consuming()

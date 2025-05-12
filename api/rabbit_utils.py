@@ -11,13 +11,13 @@ def connect() -> pika.BlockingConnection:
     """
     Connect to RabbitMQ server using the AMQP URL from environment variables.
     """
-    # try:
-    connection = pika.BlockingConnection(pika.URLParameters(AMQP_URL))
-    # except Exception as e:
-        # infologger.info("Failed to connect to RabbitMQ service.")
-        # raise
-    # else:
-    return connection
+    try:
+        connection = pika.BlockingConnection(pika.URLParameters(AMQP_URL))
+    except Exception as e:
+        infologger.info("Failed to connect to RabbitMQ service.")
+        raise
+    else:
+        return connection
 
 
 def publish(queue: str, message: str) -> None:
@@ -29,5 +29,18 @@ def publish(queue: str, message: str) -> None:
         routing_key=queue,  # Queue name = routing key
         body=json.dumps(message),  # Convert dict to JSON string
     )
-    infologger.info(f"Data sent to {queue} successfully.")
+    infologger.info(f"Data sent to {message['stage']} stage.")
     connection.close()  # Close the connection after sending the message
+
+"""
+You mean rabbitmq can scale up/scale down each component independently 
+
+| Feature             | Behavior                                         |
+| ------------------- | ------------------------------------------------ |
+| Independent scaling | ✅ Each component can scale up/down independently |
+| Sequential flow     | ✅ Messages still follow defined service order    |
+| Fault isolation     | ✅ If one step breaks, others still run           |
+| Load balancing      | ✅ RabbitMQ spreads work across all consumers     |
+
+"""
+

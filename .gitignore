@@ -90,3 +90,5 @@ target/
 
 # virtual env
 venv
+
+bash.*

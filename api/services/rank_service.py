@@ -1,6 +1,6 @@
 import json
-from logger import infologger
-from rabbit_utils import connect, publish
+from api.logger import infologger
+from api.rabbit_utils import connect, publish
 from sentence_transformers import CrossEncoder
 
 infologger.info("*** Executing: rank_service.py ***")
@@ -9,11 +9,15 @@ model = None
 
 
 def callback(ch, method, properties, body):
-    data = json.loads(body)  # {"query": data["query"], "top_chunks": result}
-    infologger.info(f"Data received at rank_queue.")
-    # infologger.info(f"Data: {data}")
+    message = json.loads(body)  
+    
+    if message.get("stage") != "rank":
+        publish("rag_queue", message)
+        return
 
-    pairs = [(data["query"], chunk) for chunk in data["top_chunks"]]
+    infologger.info(f"Ranking service received the data.")
+
+    pairs = [(message["user_query"], chunk) for chunk in message["search_results"]]
     try:
         scores = model.predict(pairs)
     except Exception as e:
@@ -22,10 +26,12 @@ def callback(ch, method, properties, body):
     else:
         infologger.info(f"Chunks ranked successfully.")
         ranked_chunks = [
-            chunk for _, chunk in sorted(zip(scores, data["top_chunks"]), reverse=True)
+            chunk for _, chunk in sorted(zip(scores, message["search_results"]), reverse=True)
         ]
-
-        publish("llm_queue", {"query": data["query"], "ranked_chunks": ranked_chunks})
+        
+        message["ranked_results"] = ranked_chunks
+        message["stage"] = "llm"
+        publish("rag_queue", message)
 
 
 if __name__ == "__main__":
@@ -41,11 +47,11 @@ if __name__ == "__main__":
         # Connect to RabbitMQ and start consuming messages
         connection = connect()
         channel = connection.channel()
-        channel.queue_declare(queue="rank_queue")
-        infologger.info("rank_queue created/declared...")
+        channel.queue_declare(queue="rag_queue")
+        infologger.info("rag_queue created/declared...")
 
         channel.basic_consume(
-            queue="rank_queue", on_message_callback=callback, auto_ack=True
+            queue="rag_queue", on_message_callback=callback, auto_ack=True
         )
-        infologger.info("rank_queue waiting for vectors...")
+        infologger.info("Ranking service waiting for message...")
         channel.start_consuming()
