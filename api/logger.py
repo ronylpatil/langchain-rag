@@ -9,7 +9,7 @@ if not infologger.hasHandlers():  # Avoid adding multiple handlers if imported m
     console_handler.setLevel(logging.INFO)
 
     formatter = logging.Formatter(
-        "[ %(levelname)s ] - %(message)s"
+        "%(levelname)s:\t %(message)s"
     )
     console_handler.setFormatter(formatter)
     infologger.addHandler(console_handler)
