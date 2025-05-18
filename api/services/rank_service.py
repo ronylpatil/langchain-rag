@@ -1,3 +1,5 @@
+# ============== Note: Not in use ==============
+
 import json
 from api.logger import infologger
 from api.rabbit_utils import connect, publish

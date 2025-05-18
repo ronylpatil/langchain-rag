@@ -1,3 +1,5 @@
+# ============== Note: Not in use ==============
+
 import os
 import pika
 import json
